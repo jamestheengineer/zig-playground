@@ -1,22 +1,71 @@
+const Header = struct {
+    magic: u32,
+    name: []const u8,
+};
+
+const print = std.debug.print;
 const std = @import("std");
-const builtin = @import("builtin");
+const os = std.os;
+const assert = std.debug.assert;
 
-pub fn main() !void {
-    const msg = "hello this is dog";
-    var it = std.mem.tokenize(u8, msg, " ");
-    while (it.next()) |item| {
-        std.debug.print("{s}\n", .{item});
+pub fn main() void {
+    printInfoAboutStruct(Header);
+
+    // integers
+    const one_plus_one: i32 = 1 + 1;
+    print("1 + 1 = {}\n", .{one_plus_one});
+
+    // floats
+    const seven_div_three: f32 = 7.0 / 3.0;
+    print("7.0 / 3.0 = {}\n", .{seven_div_three});
+
+    // boolean
+    print("{}\n{}\n{}\n", .{
+        true and false,
+        true or false,
+        !true,
+    });
+
+    // optional
+    var optional_value: ?[]const u8 = null;
+    assert(optional_value == null);
+
+    print("\noptional 1\ntype: {}\nvalue: {?s}\n", .{
+        @TypeOf(optional_value), optional_value,
+    });
+
+    optional_value = "hi";
+    assert(optional_value != null);
+
+    print("\noptional 2\ntype: {}\nvalue: {?s}\n", .{
+        @TypeOf(optional_value), optional_value,
+    });
+
+    // error union
+    var number_or_error: anyerror!i32 = error.ArgNotFound;
+
+    print("\nerror union 1\ntype: {}\nvalue: {!}\n", .{
+        @TypeOf(number_or_error),
+        number_or_error,
+    });
+
+    number_or_error = 1234;
+
+    print("\nerror union 2\ntype: {}\nvalue: {!}\n", .{
+        @TypeOf(number_or_error), number_or_error,
+    });
+}
+
+fn printInfoAboutStruct(comptime T: type) void {
+    const info = @typeInfo(T);
+    inline for (info.Struct.fields) |field| {
+        std.debug.print(
+            "{s} has a field called {s} with type {s}\n",
+            .{
+                @typeName(T),
+                field.name,
+                @typeName(field.type),
+            },
+        );
     }
-}
-
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
-
-test "integer overflow at compile time" {
-    const x: u8 = 255;
-    x += 1;
 }
