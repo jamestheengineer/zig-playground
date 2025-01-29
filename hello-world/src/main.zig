@@ -1,39 +1,47 @@
-const std = @import("std");
-const expectEqual = std.testing.expectEqual;
+const expect = @import("std").testing.expect;
 
-test "Basic vector usage" {
-    // Vectors have a compile-time known length and base type.
-    const a = @Vector(4, i32){ 1, 2, 3, 4 };
-    const b = @Vector(4, i32){ 5, 6, 7, 8 };
+test "address of syntax" {
+    // Get the address of a variable:
+    const x: i32 = 1234;
+    const x_ptr = &x;
 
-    // Math operations take place element-wise.
-    const c = a + b;
+    // Dereference a pointer:
+    try expect(x_ptr.* == 1234);
 
-    // Individual vector elements can be accessed using array indexing syntax.
-    try expectEqual(6, c[0]);
-    try expectEqual(8, c[1]);
-    try expectEqual(10, c[2]);
-    try expectEqual(12, c[3]);
+    // When you get the address of a const variable, you get a const single-item pointer.
+    try expect(@TypeOf(x_ptr) == *const i32);
+
+    // If you want to mutate the value, you'd need an address of a mutable variable:
+    var y: i32 = 5678;
+    const y_ptr = &y;
+    try expect(@TypeOf(y_ptr) == *i32);
+    y_ptr.* += 1;
+    try expect(y_ptr.* == 5679);
 }
 
-test "Conversion between vectors, arrays, and slices" {
-    // Vectors and fixed-length arrays can be automatically assigned back and forth
-    const arr1: [4]f32 = [_]f32{ 1.1, 3.2, 4.5, 5.6 };
-    const vec: @Vector(4, f32) = arr1;
-    const arr2: [4]f32 = vec;
-    try expectEqual(arr1, arr2);
+test "pointer array access" {
+    // Taking an address of an individual element gives a
+    // single-item pointer. This kind of pointer
+    // does not support pointer arithmetic.
+    var array = [_]u8{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    const ptr = &array[2];
+    try expect(@TypeOf(ptr) == *u8);
 
-    // You can also assign from a slice with comptime-known length to a vector using .*
-    const vec2: @Vector(2, f32) = arr1[1..3].*;
+    try expect(array[2] == 3);
+    ptr.* += 1;
+    try expect(array[2] == 4);
+}
 
-    const slice: []const f32 = &arr1;
-    var offset: u32 = 1; // var to make it runtime-known
-    _ = &offset; // suppress 'var is never mutated' error
-    // To extract a comptime-known length from a runtime-known offset,
-    // first extract a new slice from the starting offset, then an array of
-    // comptime-known length
-    const vec3: @Vector(2, f32) = slice[offset..][0..2].*;
-    try expectEqual(slice[offset], vec2[0]);
-    try expectEqual(slice[offset + 1], vec2[1]);
-    try expectEqual(vec2, vec3);
+test "slice syntax" {
+    // Get a pointer to a variable:
+    var x: i32 = 1234;
+    const x_ptr = &x;
+
+    // Convert to array pointer using slice syntax:
+    const x_array_ptr = x_ptr[0..1];
+    try expect(@TypeOf(x_array_ptr) == *[1]i32);
+
+    // Coerce to many-item pointer:
+    const x_many_ptr: [*]i32 = x_array_ptr;
+    try expect(x_many_ptr[0] == 1234);
 }
