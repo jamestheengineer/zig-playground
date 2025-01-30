@@ -1,47 +1,55 @@
 const expect = @import("std").testing.expect;
+const expectEqualSlices = @import("std").testing.expectEqualSlices;
 
-test "address of syntax" {
-    // Get the address of a variable:
-    const x: i32 = 1234;
-    const x_ptr = &x;
+test "basic slices" {
+    var array = [_]i32{ 1, 2, 3, 4 };
+    var known_at_runtime_zero: usize = 0;
+    _ = &known_at_runtime_zero;
+    const slice = array[known_at_runtime_zero..array.len];
 
-    // Dereference a pointer:
-    try expect(x_ptr.* == 1234);
+    // alternative initialization using result location
+    const alt_slice: []const i32 = &.{ 1, 2, 3, 4 };
 
-    // When you get the address of a const variable, you get a const single-item pointer.
-    try expect(@TypeOf(x_ptr) == *const i32);
+    try expectEqualSlices(i32, slice, alt_slice);
 
-    // If you want to mutate the value, you'd need an address of a mutable variable:
-    var y: i32 = 5678;
-    const y_ptr = &y;
-    try expect(@TypeOf(y_ptr) == *i32);
-    y_ptr.* += 1;
-    try expect(y_ptr.* == 5679);
-}
+    try expect(@TypeOf(slice) == []i32);
+    try expect(&slice[0] == &array[0]);
+    try expect(slice.len == array.len);
 
-test "pointer array access" {
-    // Taking an address of an individual element gives a
-    // single-item pointer. This kind of pointer
-    // does not support pointer arithmetic.
-    var array = [_]u8{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    const ptr = &array[2];
-    try expect(@TypeOf(ptr) == *u8);
+    // If you slice with comptime-known start and end positions, the result is
+    // a pointer to an array, rather than a slice.
+    const array_ptr = array[0..array.len];
+    try expect(@TypeOf(array_ptr) == *[array.len]i32);
 
-    try expect(array[2] == 3);
-    ptr.* += 1;
-    try expect(array[2] == 4);
-}
+    // You can perform a slice-by-length by slicing twice. This allows the compiler
+    // to perform some optimisations like recognising a comptime-known length when
+    // the start position is only known at runtime.
+    var runtime_start: usize = 1;
+    _ = &runtime_start;
+    const length = 2;
+    const array_ptr_len = array[runtime_start..][0..length];
+    try expect(@TypeOf(array_ptr_len) == *[length]i32);
 
-test "slice syntax" {
-    // Get a pointer to a variable:
-    var x: i32 = 1234;
-    const x_ptr = &x;
+    // Using the address-of operator on a slice gives a single-item pointer.
+    try expect(@TypeOf(&slice[0]) == *i32);
+    // Using the `ptr` field gives a many-item pointer.
+    try expect(@TypeOf(slice.ptr) == [*]i32);
+    try expect(@intFromPtr(slice.ptr) == @intFromPtr(&slice[0]));
 
-    // Convert to array pointer using slice syntax:
-    const x_array_ptr = x_ptr[0..1];
-    try expect(@TypeOf(x_array_ptr) == *[1]i32);
+    // Slices have array bounds checking. If you try to access something out
+    // of bounds, you'll get a safety check failure:
+    // slice[10] += 1;
 
-    // Coerce to many-item pointer:
-    const x_many_ptr: [*]i32 = x_array_ptr;
-    try expect(x_many_ptr[0] == 1234);
+    // Note that `slice.ptr` does not invoke safety checking, while `&slice[0]`
+    // asserts that the slice has len > 0.
+
+    // Empty slices can be created like this:
+    const empty1 = &[0]u8{};
+    // If the type is known you can use this short hand:
+    const empty2: []u8 = &.{};
+    try expect(empty1.len == 0);
+    try expect(empty2.len == 0);
+
+    // A zero-length initialization can always be used to create an empty slice, even if the slice is mutable.
+    // This is because the pointed-to data is zero bits long, so its immutability is irrelevant.
 }
