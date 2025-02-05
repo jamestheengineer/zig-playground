@@ -1,19 +1,20 @@
-const std = @import("std");
-const expect = std.testing.expect;
+const print = @import("std").debug.print;
 
-test "tuple" {
-    const values = .{
-        @as(u32, 1234),
-        @as(f64, 12.34),
-        true,
-        "hi",
-    } ++ .{false} ** 2;
-    try expect(values[0] == 1234);
-    try expect(values[4] == false);
-    inline for (values, 0..) |v, i| {
-        if (i != 2) continue;
-        try expect(v);
-    }
-    try expect(values.len == 6);
-    try expect(values.@"3"[0] == 'h');
+pub fn main() void {
+    const digits = [_]i8{ 3, 8, 9, 0, 7, 4, 1 };
+
+    const min, const max = blk: {
+        var min: i8 = 127;
+        var max: i8 = -128;
+
+        for (digits) |digit| {
+            if (digit < min) min = digit;
+            if (digit > max) max = digit;
+        }
+
+        break :blk .{ min, max };
+    };
+
+    print("min = {}", .{min});
+    print("max = {}", .{max});
 }
