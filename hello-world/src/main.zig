@@ -1,20 +1,12 @@
 const print = @import("std").debug.print;
 
+fn divmod(numerator: u32, denominator: u32) struct { u32, u32 } {
+    return .{ numerator / denominator, numerator % denominator };
+}
+
 pub fn main() void {
-    const digits = [_]i8{ 3, 8, 9, 0, 7, 4, 1 };
+    const div, const mod = divmod(10, 3);
 
-    const min, const max = blk: {
-        var min: i8 = 127;
-        var max: i8 = -128;
-
-        for (digits) |digit| {
-            if (digit < min) min = digit;
-            if (digit > max) max = digit;
-        }
-
-        break :blk .{ min, max };
-    };
-
-    print("min = {}", .{min});
-    print("max = {}", .{max});
+    print("10 / 3 = {}\n", .{div});
+    print("10 % 3 = {}\n", .{mod});
 }
