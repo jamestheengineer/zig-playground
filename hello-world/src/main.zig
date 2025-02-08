@@ -1,24 +1,14 @@
 const std = @import("std");
 const expect = std.testing.expect;
 
-const Color = enum {
-    auto,
-    off,
-    on,
+const Payload = union {
+    int: i64,
+    float: f64,
+    boolean: bool,
 };
-
-test "enum literals" {
-    const color1: Color = .auto;
-    const color2 = Color.auto;
-    try expect(color1 == color2);
-}
-
-test "switch using enum literals" {
-    const color = Color.on;
-    const result = switch (color) {
-        .auto => false,
-        .on => true,
-        .off => false,
-    };
-    try expect(result);
+test "simple union" {
+    var payload = Payload{ .int = 1234 };
+    try expect(payload.int == 1234);
+    payload = Payload{ .float = 12.34 };
+    try expect(payload.float == 12.34);
 }
