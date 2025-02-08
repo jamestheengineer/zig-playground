@@ -1,12 +1,24 @@
-const print = @import("std").debug.print;
+const std = @import("std");
+const expect = std.testing.expect;
 
-fn divmod(numerator: u32, denominator: u32) struct { u32, u32 } {
-    return .{ numerator / denominator, numerator % denominator };
+const Color = enum {
+    auto,
+    off,
+    on,
+};
+
+test "enum literals" {
+    const color1: Color = .auto;
+    const color2 = Color.auto;
+    try expect(color1 == color2);
 }
 
-pub fn main() void {
-    const div, const mod = divmod(10, 3);
-
-    print("10 / 3 = {}\n", .{div});
-    print("10 % 3 = {}\n", .{mod});
+test "switch using enum literals" {
+    const color = Color.on;
+    const result = switch (color) {
+        .auto => false,
+        .on => true,
+        .off => false,
+    };
+    try expect(result);
 }
