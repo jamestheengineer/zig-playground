@@ -1,9 +1,12 @@
 const expect = @import("std").testing.expect;
 
-test "while basic" {
+test "while continue" {
     var i: usize = 0;
-    while (i < 10) {
+    while (true) {
         i += 1;
+        if (i < 10)
+            continue;
+        break;
     }
     try expect(i == 10);
 }
