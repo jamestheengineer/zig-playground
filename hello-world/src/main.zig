@@ -1,18 +1,13 @@
-const Point = struct {
-    x: i32,
-    y: i32,
-};
-
-fn foo(point: Point) i32 {
-    // Here, `point` could be a reference, or a copy. The function body
-    // can ignore the difference and treat it as a value. Be very careful
-    // taking the address of the parameter - it should be treated as if
-    // the address will become invalid when the function returns.
-    return point.x + point.y;
-}
-
 const expect = @import("std").testing.expect;
 
-test "pass struct to function" {
-    try expect(foo(Point{ .x = 1, .y = 2 }) == 3);
+fn addFortyTwo(x: anytype) @TypeOf(x) {
+    return x + 42;
+}
+
+test "fn type inference" {
+    try expect(addFortyTwo(1) == 43);
+    try expect(@TypeOf(addFortyTwo(1)) == comptime_int);
+    const y: i64 = 2;
+    try expect(addFortyTwo(y) == 44);
+    try expect(@TypeOf(addFortyTwo(y)) == i64);
 }
