@@ -1,9 +1,20 @@
-test "inline function call" {
-    if (foo(1200, 34) != 1234) {
-        @compileError("bad");
-    }
+const std = @import("std");
+
+const FileOpenError = error{
+    AccessDenied,
+    OutOfMemory,
+    FileNotFound,
+};
+
+const AllocationError = error{
+    OutOfMemory,
+};
+
+test "coerce subset to superset" {
+    const err = foo(AllocationError.OutOfMemory);
+    try std.testing.expect(err == FileOpenError.OutOfMemory);
 }
 
-inline fn foo(a: i32, b: i32) i32 {
-    return a + b;
+fn foo(err: AllocationError) FileOpenError {
+    return err;
 }
