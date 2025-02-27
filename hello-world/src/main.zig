@@ -1,20 +1,20 @@
-const std = @import("std");
-
-const FileOpenError = error{
-    AccessDenied,
-    OutOfMemory,
-    FileNotFound,
-};
-
-const AllocationError = error{
-    OutOfMemory,
-};
-
-test "coerce subset to superset" {
-    const err = foo(AllocationError.OutOfMemory);
-    try std.testing.expect(err == FileOpenError.OutOfMemory);
+test "type coercion - variable declaration" {
+    const a: u8 = 1;
+    const b: u16 = a;
+    _ = b;
 }
 
-fn foo(err: AllocationError) FileOpenError {
-    return err;
+test "type coercion - function call" {
+    const a: u8 = 1;
+    foo(a);
+}
+
+fn foo(b: u16) void {
+    _ = b;
+}
+
+test "type coercion - @as builtin" {
+    const a: u8 = 1;
+    const b = @as(u16, a);
+    _ = b;
 }
