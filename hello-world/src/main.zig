@@ -1,20 +1,16 @@
-test "type coercion - variable declaration" {
-    const a: u8 = 1;
-    const b: u16 = a;
-    _ = b;
-}
+const std = @import("std");
+const expect = std.testing.expect;
 
-test "type coercion - function call" {
-    const a: u8 = 1;
-    foo(a);
-}
+test "turn HashMap into a set with void" {
+    var map = std.AutoHashMap(i32, void).init(std.testing.allocator);
+    defer map.deinit();
 
-fn foo(b: u16) void {
-    _ = b;
-}
+    try map.put(1, {});
+    try map.put(2, {});
 
-test "type coercion - @as builtin" {
-    const a: u8 = 1;
-    const b = @as(u16, a);
-    _ = b;
+    try expect(map.contains(2));
+    try expect(!map.contains(3));
+
+    _ = map.remove(2);
+    try expect(!map.contains(2));
 }
