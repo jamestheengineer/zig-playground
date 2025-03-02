@@ -1,9 +1,12 @@
 fn max(comptime T: type, a: T, b: T) T {
-    return if (a > b) a else b;
+    if (T == bool) {
+        return a or b;
+    } else if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
 }
-fn gimmeTheBiggerFloat(a: f32, b: f32) f32 {
-    return max(f32, a, b);
-}
-fn gimmeTheBiggerInteger(a: u64, b: u64) u64 {
-    return max(u64, a, b);
+test "try to compare bools" {
+    try @import("std").testing.expect(max(bool, false, true) == true);
 }
